@@ -410,7 +410,7 @@ def main():
         sys.exit(0)
 
     out_dir = Path(args.output_dir) if args.output_dir else \
-              Path(os.path.dirname(os.path.abspath(__file__))) / "clips"
+              Path.home() / "Videos" / "steam_clips"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     event_types = {e.strip().lower() for e in args.events.split(",")}
