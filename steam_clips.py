@@ -474,15 +474,22 @@ def main():
 
         for i, (clip_start, clip_end, labels, markers) in enumerate(clusters, start=1):
             if len(labels) > 1:
-                # Use the first event's wall-clock time for the cluster name
                 first_label = labels[0]
-                clip_name = f"{first_label}_CLUSTER_{len(labels)}events.mp4"
-                desc      = f"cluster of {len(labels)}: " + ", ".join(labels)
+                clip_name   = f"{first_label}_CLUSTER_{len(labels)}events.mp4"
+                desc        = f"cluster of {len(labels)}: " + ", ".join(labels)
+                sub_dir     = out_dir / "mixed"
             else:
                 clip_name = f"{labels[0]}.mp4"
                 desc      = labels[0]
-
-            output_path = out_dir / clip_name
+                title_lower = markers[0][1].lower()
+                if "kill" in title_lower:
+                    sub_dir = out_dir / "kills"
+                elif "death" in title_lower:
+                    sub_dir = out_dir / "deaths"
+                else:
+                    sub_dir = out_dir / "other"
+            sub_dir.mkdir(parents=True, exist_ok=True)
+            output_path = sub_dir / clip_name
             duration    = clip_end - clip_start
             print(f"\n  [{i}/{len(clusters)}] {desc}")
             print(f"    {clip_start:.1f}s – {clip_end:.1f}s  ({duration:.0f}s)")
