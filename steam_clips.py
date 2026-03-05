@@ -158,8 +158,10 @@ def pair_sessions(rec_dir: Path) -> list[tuple[Path, Path, float]]:
     The timeline starts logging before the video folder is created, so the
     video is offset_s shorter than the timeline at the start.
 
-    Pairing is by nearest wall-clock timestamp in the filenames (within 120s).
-    This correctly handles cases where one side has extra/orphan entries.
+    Pairing picks the closest unmatched video dir by wall-clock timestamp
+    within a 600s window. 600s is generous enough to handle cases where the
+    video dir is created several minutes after the timeline starts, while
+    rejecting timelines whose video was never recorded / has been deleted.
     """
     timelines  = sorted((rec_dir / "timelines").glob("timeline_*.json"))
     video_dirs = sorted(
@@ -185,13 +187,13 @@ def pair_sessions(rec_dir: Path) -> list[tuple[Path, Path, float]]:
         tl_s = ts_seconds(tl.name)
         if tl_s is None:
             continue
-        best, best_diff = None, 120
+        best, best_diff = None, 600
         for vd in unmatched_vds:
             vd_s = ts_seconds(vd.name)
             if vd_s is None:
                 continue
             diff = abs(vd_s - tl_s)
-            if diff <= best_diff:
+            if diff < best_diff:
                 best, best_diff = vd, diff
         if best is not None:
             unmatched_vds.remove(best)
